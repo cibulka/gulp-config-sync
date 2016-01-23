@@ -20,9 +20,10 @@ var defaultOptions = {
     'description',
     'keywords',
     'license',
-    'repository',
+    'repository'
   ],
   space: '  ',
+  callbacks: {}
 };
 
 /**
@@ -30,6 +31,8 @@ var defaultOptions = {
  */
 function plugin(options) {
   var opts = _.assign({}, defaultOptions, options);
+
+  console.log(opts);
 
   // creating a stream through which each file will pass
   var stream = through.obj(function(file, enc, cb) {
@@ -52,6 +55,7 @@ function plugin(options) {
 };
 
 function syncConfig(file, opts, cb) {
+
   Q.resolve()
 
   // get the source.json
@@ -74,9 +78,21 @@ function syncConfig(file, opts, cb) {
 
     _.forEach(opts.fields, function(field) {
       if (_.isObject(field)) {
+	    if (opts.callbacks[field] !== undefined) {
+	      console.error("gulp-config-sync: Callbacks not done for object.");
+	    }
         configObj[field.to] = srcObj[field.from];
       } else {
-        configObj[field] = srcObj[field];
+	    // Get val from source object
+	    var val = srcObj[field];
+	    // Filter val via callback, if available
+	    if (opts.callbacks[field] !== undefined) {
+		  val = opts.callbacks[field](field, val, file);
+		}
+		// Assign new val, if it's not "__false"
+		if (val !== '__false') {
+	      configObj[field] = val;
+		}
       }
     });
 
