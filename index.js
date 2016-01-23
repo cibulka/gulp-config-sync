@@ -32,8 +32,6 @@ var defaultOptions = {
 function plugin(options) {
   var opts = _.assign({}, defaultOptions, options);
 
-  console.log(opts);
-
   // creating a stream through which each file will pass
   var stream = through.obj(function(file, enc, cb) {
 
